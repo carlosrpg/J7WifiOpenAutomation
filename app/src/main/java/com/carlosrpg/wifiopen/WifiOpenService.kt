@@ -86,14 +86,14 @@ class WifiOpenService : AccessibilityService() {
     fun runNow() {
         val engMode = getSharedPreferences(PREFS, MODE_PRIVATE).getString(KEY_ENGMODE, null)
         when {
-            engMode == null -> fail("Pick the EngMode app first")
-            step != Step.IDLE -> fail("Automation is already running")
+            engMode == null -> fail(getString(R.string.err_engmode_not_set))
+            step != Step.IDLE -> fail(getString(R.string.err_already_running))
             else -> start(engMode, hidden = false)
         }
     }
 
     private fun start(engMode: String, hidden: Boolean) {
-        val launch = launchIntentFor(engMode) ?: return fail("No activity of $engMode can be opened by other apps")
+        val launch = launchIntentFor(engMode) ?: return fail(getString(R.string.err_no_activity, engMode))
         Log.i(TAG, "Running EngMode WiFi automation with ${launch.component}")
         engModePkg = engMode
         if (hidden) showOverlay()
@@ -102,7 +102,7 @@ class WifiOpenService : AccessibilityService() {
             startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
         } catch (e: Exception) { // SecurityException (protected activity) or ActivityNotFoundException
             hideOverlay()
-            return fail("Android refused to open ${launch.component?.className}: ${e.message}")
+            return fail(getString(R.string.err_launch_refused, launch.component?.className, e.message))
         }
         step = Step.CLICK_WIFI
         deadline = SystemClock.uptimeMillis() + TIMEOUT_MS
@@ -112,7 +112,8 @@ class WifiOpenService : AccessibilityService() {
 
     private fun tick() {
         if (step != Step.CLOSE && SystemClock.uptimeMillis() > deadline) {
-            fail(if (engModeRoot() == null) "EngMode never appeared on screen" else "Timed out at $step: button not found")
+            fail(if (engModeRoot() == null) getString(R.string.err_engmode_not_shown)
+            else getString(R.string.err_button_not_found, if (step == Step.CLICK_WIFI) "WIFI" else "Open"))
             step = Step.CLOSE
         }
         val root = engModeRoot()

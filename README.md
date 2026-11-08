@@ -46,7 +46,8 @@ sequenceDiagram
 - **Hidden behind an overlay.** Accessibility clicks reach EngMode underneath a full-screen accessibility overlay,
   so EngMode never shows. (Running it truly off-screen would need system privileges.)
 - **Fails safe.** If a button isn't found within 15 s, it gives up, closes EngMode and removes the overlay.
-- **Zero dependencies.** Plain Android framework, about 250 lines of Kotlin.
+- **English and Brazilian Portuguese**, following the head unit's language.
+- **Zero dependencies.** Plain Android framework, about 300 lines of Kotlin.
 
 ## Install on the car
 
@@ -55,7 +56,7 @@ sequenceDiagram
    page in Settings, so this one-time grant is what makes the **Start service** button work:
 
    ```bash
-   adb install -r J7WifiOpen-1.0.2.apk
+   adb install -r J7WifiOpen-1.0.3.apk
    ```
    ```bash
    adb shell pm grant com.carlosrpg.wifiopen android.permission.WRITE_SECURE_SETTINGS

@@ -12,4 +12,10 @@
     <string name="grant_needed">Run once from a computer, then tap again:\nadb shell pm grant com.carlosrpg.wifiopen android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="service_start_failed">Service still not running. Check: adb shell dumpsys accessibility</string>
     <string name="connecting_wifi">Connecting WiFi…</string>
+    <string name="err_engmode_not_set">Pick the EngMode app first</string>
+    <string name="err_already_running">Automation is already running</string>
+    <string name="err_no_activity">No screen of %1$s can be opened by other apps</string>
+    <string name="err_launch_refused">Android refused to open %1$s: %2$s</string>
+    <string name="err_engmode_not_shown">EngMode never appeared on screen</string>
+    <string name="err_button_not_found">Button \"%1$s\" not found in EngMode</string>
 </resources>

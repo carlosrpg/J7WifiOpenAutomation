@@ -1,0 +1,20 @@
+<resources>
+    <string name="service_description">Abre o WiFi no EngMode quando o Android Auto ou o CarPlay conecta.</string>
+    <string name="engmode_label">App EngMode</string>
+    <string name="not_set">— Não definido (automação desligada) —</string>
+    <string name="close">Fechar</string>
+    <string name="open_wifi">Abrir WiFi</string>
+    <string name="service_not_running">O serviço de acessibilidade não está em execução. Toque em Iniciar serviço primeiro.</string>
+    <string name="service_running">● Serviço em execução</string>
+    <string name="service_stopped">● Serviço parado</string>
+    <string name="start_service">Iniciar serviço</string>
+    <string name="grant_needed">Execute uma vez em um computador e toque de novo:\nadb shell pm grant com.carlosrpg.wifiopen android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="service_start_failed">O serviço ainda não está em execução. Verifique: adb shell dumpsys accessibility</string>
+    <string name="connecting_wifi">Conectando WiFi…</string>
+    <string name="err_engmode_not_set">Escolha o app EngMode primeiro</string>
+    <string name="err_already_running">A automação já está em execução</string>
+    <string name="err_no_activity">Nenhuma tela de %1$s pode ser aberta por outros apps</string>
+    <string name="err_launch_refused">O Android recusou abrir %1$s: %2$s</string>
+    <string name="err_engmode_not_shown">O EngMode não apareceu na tela</string>
+    <string name="err_button_not_found">Botão \"%1$s\" não encontrado no EngMode</string>
+</resources>
