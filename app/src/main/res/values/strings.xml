@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">J7 WiFi Open Automation</string>
+    <string name="service_description">Opens WiFi in EngMode when Android Auto or CarPlay connects.</string>
+    <string name="engmode_label">EngMode app</string>
+    <string name="not_set">— Not set (automation off) —</string>
+    <string name="close">Close</string>
+    <string name="connecting_wifi">Connecting WiFi…</string>
+</resources>
