@@ -19,16 +19,16 @@ jobs:
       RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
       RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
       RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-      ORG_GRADLE_PROJECT_appVersionCode: ${{ github.run_number }}
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # tags: non-release builds are versioned X.Y.(Z+1)-dev.N from the latest vX.Y.Z tag
 
-      - name: Compute version
-        run: |
-          if [ "$IS_RELEASE" = "true" ]; then VERSION="${GITHUB_REF_NAME#v}"; else VERSION="0.0.0-ci.${GITHUB_RUN_NUMBER}"; fi
-          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "ORG_GRADLE_PROJECT_appVersionName=$VERSION" >> "$GITHUB_ENV"
+      # Only tag builds get a plain X.Y.Z; app/build.gradle.kts derives every other version from git.
+      - name: Use tag as release version
+        if: env.IS_RELEASE == 'true'
+        run: echo "ORG_GRADLE_PROJECT_appVersionName=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v5
         with:
@@ -58,6 +58,8 @@ jobs:
           ./gradlew testDebugUnitTest assembleRelease --stacktrace
           mkdir -p dist
           APK=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          APP_VERSION=$("$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
+          echo "APP_VERSION=$APP_VERSION" >> "$GITHUB_ENV"
           if [ "$IS_RELEASE" = "true" ]; then
             "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK"
             cp "$APK" "dist/J7WifiOpen-$APP_VERSION.apk"

@@ -139,6 +139,18 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+### Versioning
+
+Versions come from git tags; nobody edits a version number by hand.
+
+| Build | versionName | versionCode |
+|---|---|---|
+| CI, tag `v1.0.4` | `1.0.4` | `10004999` |
+| Anything else (local, even `assembleRelease`; CI on `main`) | `1.0.4-dev.N`, N = commits since `v1.0.3` | `10004000 + N` |
+
+A `-dev` build always ranks below the release it leads up to, so installing the CI release of `1.0.4` replaces
+any local `1.0.4-dev.N` build. Minor and patch must stay below 100.
+
 Signed builds need these repository secrets:
 
 | Secret | Value |
