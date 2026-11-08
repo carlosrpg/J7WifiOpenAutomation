@@ -16,7 +16,7 @@ A "Connecting WiFi…" screen covers it all, so you never see the menus.
 <p align="center">
   <img src="docs/images/overlay.png" width="300" alt="Connecting WiFi overlay with animated WiFi symbol">
   &nbsp;&nbsp;
-  <img src="docs/images/settings.png" width="300" alt="Settings page with the EngMode picker">
+  <img src="docs/images/settings.png" width="300" alt="Settings page: service status, EngMode picker, Open WiFi test button">
 </p>
 
 > [!WARNING]
@@ -51,27 +51,38 @@ sequenceDiagram
 ## Install on the car
 
 1. Download the latest `J7WifiOpen-<version>.apk` from [Releases](https://github.com/carlosrpg/J7WifiOpenAutomation/releases).
-2. Install it and enable the accessibility service over adb. Android Automotive usually has no Accessibility
-   page in Settings, and it already enables its own services, so **append** to the list instead of replacing it:
+2. Install it and let it switch its own accessibility service on. Android Automotive usually has no Accessibility
+   page in Settings, so this one-time grant is what makes the **Start service** button work:
 
    ```bash
-   adb install -r J7WifiOpen-1.0.0.apk
+   adb install -r J7WifiOpen-1.0.2.apk
    ```
    ```bash
-   adb shell settings get secure enabled_accessibility_services
-   ```
-   ```bash
-   adb shell settings put secure enabled_accessibility_services "<value from above>:com.carlosrpg.wifiopen/.WifiOpenService"
-   ```
-   ```bash
-   adb shell settings put secure accessibility_enabled 1
+   adb shell pm grant com.carlosrpg.wifiopen android.permission.WRITE_SECURE_SETTINGS
    ```
 
-3. Open **J7 WiFi Open Automation** from the app grid. It preselects the app whose name or package loosely
-   matches `engmode`. Check it, then tap **Close**. The service does nothing until EngMode is set.
+3. Open **J7 WiFi Open Automation** from the app grid and tap **Start service** until the status reads
+   **● Service running**.
+4. Pick EngMode. It preselects the app whose name or package loosely matches `engmode`; EngMode has no
+   launcher icon, which is fine, the service opens its first openable screen instead. The service does nothing
+   until EngMode is set.
+5. Tap **Open WiFi** to test. It runs the automation right away, ignores the cooldown, and leaves EngMode visible so
+   you can watch each step. Errors (EngMode can't be opened, a button wasn't found) show up as a toast.
 
-Uninstalling the app removes it from `enabled_accessibility_services`, so repeat step 2 after a reinstall
-that changes the signature.
+> [!IMPORTANT]
+> If anything **force-stops** the app (App info → Force stop, or a head-unit memory cleaner), Android switches the
+> accessibility service off and won't bring it back on its own. Open the app: the status turns red, and
+> **Start service** fixes it.
+
+Without the grant you can still enable it by hand. Keep the existing value, because Android Automotive enables
+its own services there and `put` replaces the whole list:
+
+```bash
+adb shell settings get secure enabled_accessibility_services
+```
+```bash
+adb shell settings put secure enabled_accessibility_services "<value from above>:com.carlosrpg.wifiopen/.WifiOpenService"
+```
 
 ## Tuning for your head unit
 
@@ -93,7 +104,8 @@ I J7WifiOpen: Done
 
 | Problem | Where to look |
 |---|---|
-| No `window pkg=` lines at all | The service isn't running: check `adb shell dumpsys accessibility` and step 2 |
+| Status says **Service not running** | Tap **Start service**. If it says "Run once from a computer", do the `pm grant` from step 2 |
+| No `window pkg=` lines at all | The service isn't running: same as above |
 | `window` lines, but none from the projection apps | The projection app's package differs, or it draws on another display; add what logcat shows to `PROJECTION_PKGS` |
 | `EngMode is not set` | Open the app and pick EngMode |
 | Stuck on the overlay for 15 s | EngMode's button text differs from `WIFI` / `Open`; check the `click` lines in logcat |
@@ -142,5 +154,5 @@ app/src/main/java/com/carlosrpg/wifiopen/
 ├── WifiOpenService.kt     accessibility service: detection, EngMode automation, overlay
 ├── ConnectionTrigger.kt   cooldown that stops repeat runs (unit tested)
 ├── WifiAnimationView.kt   animated WiFi symbol for the overlay
-└── SettingsActivity.kt    EngMode package picker
+└── SettingsActivity.kt    service status / start, EngMode picker, manual test run
 ```

@@ -4,5 +4,12 @@
     <string name="engmode_label">EngMode app</string>
     <string name="not_set">— Not set (automation off) —</string>
     <string name="close">Close</string>
+    <string name="open_wifi">Open WiFi</string>
+    <string name="service_not_running">The accessibility service is not running. Tap Start service first.</string>
+    <string name="service_running">● Service running</string>
+    <string name="service_stopped">● Service not running</string>
+    <string name="start_service">Start service</string>
+    <string name="grant_needed">Run once from a computer, then tap again:\nadb shell pm grant com.carlosrpg.wifiopen android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="service_start_failed">Service still not running. Check: adb shell dumpsys accessibility</string>
     <string name="connecting_wifi">Connecting WiFi…</string>
 </resources>

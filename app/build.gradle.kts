@@ -22,7 +22,7 @@ android {
         minSdk = 30
         targetSdk = 30 // Android 11
         versionCode = prop("appVersionCode")?.toInt() ?: 1
-        versionName = prop("appVersionName") ?: "1.0.1"
+        versionName = prop("appVersionName") ?: "1.0.2"
     }
 
     val keystore = rootProject.file(prop("RELEASE_STORE_FILE") ?: "release.keystore")

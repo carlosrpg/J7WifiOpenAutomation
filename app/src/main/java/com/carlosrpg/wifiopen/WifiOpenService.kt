@@ -2,6 +2,7 @@ package com.carlosrpg.wifiopen
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Handler
@@ -13,6 +14,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
@@ -35,6 +37,11 @@ class WifiOpenService : AccessibilityService() {
 
         /** Cover the screen while EngMode is driven. ACTION_CLICK works on views under an overlay. */
         private const val HIDE_WITH_OVERLAY = true
+
+        /** The running service, for SettingsActivity's test button. Null when the service is not enabled. */
+        @Volatile
+        var instance: WifiOpenService? = null
+            private set
     }
 
     private enum class Step { IDLE, CLICK_WIFI, CLICK_OPEN, CLOSE }
@@ -59,28 +66,44 @@ class WifiOpenService : AccessibilityService() {
             Log.w(TAG, "Projection app in front but EngMode is not set: open the app to pick it")
             return
         }
-        if (trigger.onProjectionWindow(SystemClock.elapsedRealtime())) start(engMode)
+        if (trigger.onProjectionWindow(SystemClock.elapsedRealtime())) start(engMode, hidden = HIDE_WITH_OVERLAY)
+    }
+
+    override fun onServiceConnected() {
+        instance = this
     }
 
     override fun onInterrupt() {}
 
     override fun onDestroy() {
+        instance = null
         handler.removeCallbacksAndMessages(null)
         hideOverlay()
         super.onDestroy()
     }
 
-    private fun start(engMode: String) {
-        val launch = packageManager.getLaunchIntentForPackage(engMode)
-        if (launch == null) {
-            Log.e(TAG, "EngMode ($engMode) not installed or has no launcher activity")
-            return
+    /** Test button in SettingsActivity: runs immediately, ignores the cooldown, and leaves EngMode visible. */
+    fun runNow() {
+        val engMode = getSharedPreferences(PREFS, MODE_PRIVATE).getString(KEY_ENGMODE, null)
+        when {
+            engMode == null -> fail("Pick the EngMode app first")
+            step != Step.IDLE -> fail("Automation is already running")
+            else -> start(engMode, hidden = false)
         }
+    }
+
+    private fun start(engMode: String, hidden: Boolean) {
+        val launch = launchIntentFor(engMode) ?: return fail("No activity of $engMode can be opened by other apps")
+        Log.i(TAG, "Running EngMode WiFi automation with ${launch.component}")
         engModePkg = engMode
-        Log.i(TAG, "Projection connected, running EngMode WiFi automation")
-        showOverlay()
-        // CLEAR_TASK so EngMode always starts on its main screen.
-        startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
+        if (hidden) showOverlay()
+        try {
+            // CLEAR_TASK so EngMode always starts on its main screen.
+            startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
+        } catch (e: Exception) { // SecurityException (protected activity) or ActivityNotFoundException
+            hideOverlay()
+            return fail("Android refused to open ${launch.component?.className}: ${e.message}")
+        }
         step = Step.CLICK_WIFI
         deadline = SystemClock.uptimeMillis() + TIMEOUT_MS
         closeAttempts = 0
@@ -89,7 +112,7 @@ class WifiOpenService : AccessibilityService() {
 
     private fun tick() {
         if (step != Step.CLOSE && SystemClock.uptimeMillis() > deadline) {
-            Log.w(TAG, "Timed out at $step")
+            fail(if (engModeRoot() == null) "EngMode never appeared on screen" else "Timed out at $step: button not found")
             step = Step.CLOSE
         }
         val root = engModeRoot()
@@ -110,6 +133,23 @@ class WifiOpenService : AccessibilityService() {
             }
         }
         handler.postDelayed(::tick, POLL_MS)
+    }
+
+    /** Launcher intent, or for hidden engineering apps (no launcher icon) their first openable activity. */
+    private fun launchIntentFor(pkg: String): Intent? {
+        packageManager.getLaunchIntentForPackage(pkg)?.let { return it }
+        val activities = try {
+            packageManager.getPackageInfo(pkg, PackageManager.GET_ACTIVITIES).activities
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+        val activity = activities?.firstOrNull { it.exported && it.enabled && it.permission == null } ?: return null
+        return Intent().setClassName(pkg, activity.name)
+    }
+
+    private fun fail(message: String) {
+        Log.e(TAG, message)
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun engModeRoot(): AccessibilityNodeInfo? =

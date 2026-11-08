@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
+    <!-- Granted once over adb (pm grant): lets the Start button (re-)enable the accessibility service. -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:label="@string/app_name"
         android:allowBackup="false">
