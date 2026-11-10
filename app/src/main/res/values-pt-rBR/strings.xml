@@ -4,7 +4,7 @@
     <string name="not_set">— Não definido (automação desligada) —</string>
     <string name="close">Fechar</string>
     <string name="open_wifi">Abrir WiFi</string>
-    <string name="service_not_running">O serviço de acessibilidade não está em execução. Toque em Iniciar serviço primeiro.</string>
+    <string name="service_not_running">Serviço parado: só abri o EngMode, nada será clicado. Toque em Iniciar serviço primeiro.</string>
     <string name="service_running">● Serviço em execução</string>
     <string name="service_stopped">● Serviço parado</string>
     <string name="start_service">Iniciar serviço</string>
@@ -17,4 +17,11 @@
     <string name="err_launch_refused">O Android recusou abrir %1$s: %2$s</string>
     <string name="err_engmode_not_shown">O EngMode não apareceu na tela</string>
     <string name="err_button_not_found">Botão \"%1$s\" não encontrado no EngMode</string>
+    <string name="enable_in_list">Ative \"%1$s\" nesta lista</string>
+    <string name="adb_section">ADB</string>
+    <string name="enabling_adb">Ativando ADB…</string>
+    <string name="adb_password_label">Senha de criptografia (este carro)</string>
+    <string name="enable_adb">Ativar ADB agora</string>
+    <string name="adb_on_boot">Ativar ADB ao iniciar</string>
+    <string name="err_adb_password_not_set">Defina a senha de criptografia primeiro</string>
 </resources>
